@@ -1,0 +1,19 @@
+{
+  "scenario": {
+    "id": 7,
+    "name": "Port Delay",
+    "supplier": {
+      "id": 92,
+      "name": "Hankyu Steel",
+      "delays": [7, 12, 3],
+      "location": {
+        "country": "JP",
+        "port": "Kobe"
+      }
+    },
+    "events": [
+      { "t": 1021, "type": "delay", "days": 7 },
+      { "t": 1033, "type": "delay", "days": 12 }
+    ]
+  }
+}
