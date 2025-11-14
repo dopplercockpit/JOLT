@@ -28,6 +28,10 @@ def json_to_jolt(
     def encode_scalar(value: Any) -> str:
         if value is None:
             return "null"
+        
+        # Unwrap {"scenario": {...}} when root_name == "scenario"
+        if isinstance(obj, dict) and root_name and list(obj.keys()) == [root_name]:
+            obj = obj[root_name]
         if isinstance(value, bool):
             return "true" if value else "false"
         if isinstance(value, (int, float)):
