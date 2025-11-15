@@ -4,6 +4,8 @@ JOLT — JSON-Optimized Lightweight Tokens
 
 A compact, LLM-native, human-readable structured data format.
 
+> **Status:** v0.1 draft – encoder + CLI + basic tests. Decoder & benchmarks coming next.
+
 
 ---
 
@@ -247,3 +249,18 @@ JSON Version
 
 
                                                                                                                                                               ---
+## Quickstart
+
+```bash
+pip install jolt-tokens
+
+# From the CLI
+jolt examples/scenario.json --root scenario
+
+# From Python
+from jolt import json_to_jolt
+import json
+
+data = json.load(open("examples/scenario.json", encoding="utf-8"))
+print(json_to_jolt(data, root_name="scenario"))
+                                                                                                      
