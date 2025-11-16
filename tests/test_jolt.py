@@ -16,6 +16,13 @@ from jolt import (
     stream_jolt_to_json
 )
 
+def _has_pandas() -> bool:
+    """Return True if pandas is importable, otherwise False."""
+    try:
+        import pandas  # type: ignore
+        return True
+    except ImportError:
+        return False
 
 class TestBasicEncoding:
     """Test basic encoding functionality"""
@@ -290,6 +297,13 @@ class TestStreaming:
         assert result["records"][0]["id"] == 0
         assert result["records"][999]["value"] == 9990
 
+def _has_pandas() -> bool:
+    """Return True if pandas is importable, otherwise False."""
+    try:
+        import pandas  # type: ignore
+        return True
+    except ImportError:
+        return False
 
 class TestIntegration:
     """Test framework integrations"""
@@ -313,15 +327,6 @@ class TestIntegration:
         df2 = jolt_to_dataframe(jolt)
         
         assert df.equals(df2)
-
-
-def _has_pandas():
-    try:
-        import pandas
-        return True
-    except ImportError:
-        return False
-
 
 class TestEdgeCases:
     """Test edge cases and error handling"""

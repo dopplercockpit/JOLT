@@ -1,23 +1,86 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "jolt-tokens"
 version = "0.2.0"
-description = "JOLT (JSON-Optimized Lightweight Tokens)"
+description = "JOLT (JSON-Optimized Lightweight Tokens) — an experimental, more compact, human-readable representation for structured data."
 readme = "README.md"
 requires-python = ">=3.10"
+
 authors = [
-  { name = "Doppler/Edward" }
+  { name = "Joshua Dopkowski", email = "example@example.com" }
 ]
 
-dependencies = [
-  # core deps here if you add any later (currently none strictly required)
+license = { text = "MIT" }
+
+keywords = ["json", "serialization", "tokens", "data-format", "jolt"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Utilities",
 ]
+
+# Core runtime dependencies (none yet, JOLT is stdlib-only for now)
+dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest", "black", "ruff"]
+# Everything you want for local dev
+dev = [
+  "pytest>=7.0",
+  "pytest-cov>=4.1",
+  "black>=24.0",
+  "ruff>=0.4",
+  "mypy>=1.10",
+]
+
+# Optional extras for integrations (adjust as you build them out)
+pandas = [
+  "pandas>=2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/dopplercockpit/JOLT"
+Source   = "https://github.com/dopplercockpit/JOLT"
+Issues   = "https://github.com/dopplercockpit/JOLT/issues"
 
 [project.scripts]
+# `jolt` will be the CLI entrypoint: `jolt ...`
 jolt = "jolt.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["jolt*"]
+exclude = ["tests*"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+select = ["E", "F", "W", "B"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+strict = false

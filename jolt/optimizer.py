@@ -339,31 +339,34 @@ class JoltOptimizer:
     
     def _try_value_pooling(self, arr: List[Any]) -> Optional[Dict[str, Any]]:
         """Pool repeated values in array"""
-        # Count value frequencies
-        counter = Counter(str(v) for v in arr)
-        
+        # If elements aren't hashable (e.g. dicts), bail out
+        try:
+            counter = Counter(arr)
+        except TypeError:
+            return None
+
         # Find most common values
         common = counter.most_common(3)
-        
+
         # If top values account for >60% of array, use pooling
         total_common = sum(count for _, count in common)
-        if total_common > len(arr) * 0.6:
-            pool = {str(v): i for i, (v, _) in enumerate(common)}
-            pooled_arr = []
-            
-            for item in arr:
-                str_item = str(item)
-                if str_item in pool:
-                    pooled_arr.append(f"${pool[str_item]}")
-                else:
-                    pooled_arr.append(item)
-            
-            return {
-                "_pool": [eval(v) for v, _ in common],
-                "_data": pooled_arr
-            }
-        
-        return None
+        if total_common <= len(arr) * 0.6:
+            return None
+
+        pool_index = {v: i for i, (v, _) in enumerate(common)}
+        pooled_arr: List[Any] = []
+
+        for item in arr:
+            if item in pool_index:
+                pooled_arr.append(f"${pool_index[item]}")
+            else:
+                pooled_arr.append(item)
+
+        return {
+            "_pool": [v for v, _ in common],
+            "_data": pooled_arr,
+        }
+
     
     def _try_compact_date(self, value: str) -> Optional[str]:
         """Try to compact ISO date strings"""

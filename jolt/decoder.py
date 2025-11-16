@@ -354,86 +354,113 @@ class JoltParser:
         return rows
     
     def parse_object(self) -> Dict[str, Any]:
-        """Parse an object"""
-        obj = {}
-        
-        # Check for named object
+        """Parse a (possibly named) object"""
+        obj: Dict[str, Any] = {}
+        name: str | None = None
+
+        # Check for named object: user { ... }
         if self.peek() and self.peek().type == TokenType.IDENTIFIER:
             name = self.advance().value
             self.skip_newlines()
             self.expect(TokenType.OPEN_BRACE)
-            # For now, we ignore the name and just parse the object
         else:
             self.expect(TokenType.OPEN_BRACE)
-        
+
         self.skip_newlines()
-        
+
         # Expect indent for object content
         if self.peek() and self.peek().type == TokenType.INDENT:
             self.advance()
-        
+
         while True:
             self.skip_newlines()
-            
-            # Check for end of object
-            if self.peek() and self.peek().type in (TokenType.DEDENT, TokenType.CLOSE_BRACE):
-                break
-            
-            # Parse key
             if not self.peek() or self.peek().type != TokenType.IDENTIFIER:
                 break
-            
+
             key = self.advance().value
-            
-            # Check for array notation
+
+            # Array notation key[n]: ...
             if self.peek() and self.peek().type == TokenType.OPEN_BRACKET:
                 size = self.advance().value
                 self.expect(TokenType.COLON)
                 self.skip_newlines()
                 obj[key] = self.parse_array(size)
-            
-            # Check for nested object
-            elif self.peek() and self.peek().type == TokenType.OPEN_BRACE:
-                obj[key] = self.parse_object()
-            
-            # Regular key-value pair
             else:
                 self.expect(TokenType.COLON)
                 self.skip_newlines()
                 obj[key] = self.parse_value()
-            
+
             self.skip_newlines()
-        
-        # Handle dedent if present
+
         if self.peek() and self.peek().type == TokenType.DEDENT:
             self.advance()
-        
-        # Expect closing brace
+
         self.expect(TokenType.CLOSE_BRACE)
-        
+
+        if name is not None:
+            return {name: obj}
         return obj
+
     
+    def parse_root_object(self) -> Dict[str, Any]:
+        """Parse a top-level object without surrounding braces.
+
+        Handles formats like:
+            id: 1
+            name: test
+            items[3]: 1,2,3
+        """
+        obj: Dict[str, Any] = {}
+
+        while True:
+            self.skip_newlines()
+            if not self.peek() or self.peek().type != TokenType.IDENTIFIER:
+                break
+
+            key = self.advance().value
+
+            # Array notation: key[n]: ...
+            if self.peek() and self.peek().type == TokenType.OPEN_BRACKET:
+                size = self.advance().value
+                self.expect(TokenType.COLON)
+                self.skip_newlines()
+                obj[key] = self.parse_array(size)
+            else:
+                self.expect(TokenType.COLON)
+                self.skip_newlines()
+                obj[key] = self.parse_value()
+
+        return obj
+
     def parse(self) -> Any:
         """Parse the entire JOLT document"""
         self.skip_newlines()
-        
-        # Check if document starts with a named block
+
         if self.peek() and self.peek().type == TokenType.IDENTIFIER:
-            if self.peek(1) and self.peek(1).type == TokenType.OPEN_BRACE:
+            second = self.peek(1)
+
+            if second and second.type == TokenType.OPEN_BRACE:
+                # Named block: user { ... }
                 result = self.parse_object()
+            elif second and second.type in (TokenType.COLON, TokenType.OPEN_BRACKET):
+                # Brace-less object:
+                #   id: 1
+                #   items[3]: 1,2,3
+                result = self.parse_root_object()
             else:
-                # Single value document
+                # Single identifier-like value
                 result = self.parse_value()
         else:
-            # Try to parse as object or value
+            # Try to parse as a single value
             result = self.parse_value()
-        
+
         # Ensure we've consumed all tokens
         self.skip_newlines()
         if self.peek() and self.peek().type != TokenType.EOF:
             raise self.error(f"Unexpected token after document: {self.peek().type}")
-        
+
         return result
+
 
 
 def jolt_to_json(

@@ -240,29 +240,71 @@ class JoltStreamParser:
                         depth=self.depth
                     )
                 
-            else:
-                # Key-value pair or identifier
-                key = self._read_until(':{\n}')
-                
-                if self._peek() == ':':
-                    # Key-value pair
-                    self._advance()
-                    self._skip_whitespace()
-                    
-                    self.path_stack.append(key)
+        else:
+            # Key-value pair or identifier (also supports key[n] array syntax)
+            raw_key = self._read_until(':{\n}')
+            base_key = raw_key
+            array_size: Optional[int] = None
+
+            # Detect array notation: items[3]
+            if '[' in raw_key and raw_key.endswith(']'):
+                bracket = raw_key.index('[')
+                base_key = raw_key[:bracket]
+                size_str = raw_key[bracket + 1:-1]
+                array_size = int(size_str) if size_str else 0
+
+            if self._peek() == ':':
+                # Key-value pair
+                self._advance()
+                self._skip_whitespace()
+
+                self.path_stack.append(base_key)
+                yield StreamEvent(
+                    StreamEventType.KEY,
+                    data=base_key,
+                    path=self.path_stack.copy(),
+                    depth=self.depth
+                )
+
+                if array_size is not None:
+                    # Inline array: key[n]: v1,v2,...
                     yield StreamEvent(
-                        StreamEventType.KEY,
-                        data=key,
+                        StreamEventType.START_ARRAY,
+                        data=array_size,
                         path=self.path_stack.copy(),
                         depth=self.depth
                     )
-                    
-                    # Check for nested structure
+
+                    for i in range(array_size):
+                        if i > 0:
+                            if self._peek() == ',':
+                                self._advance()
+                                self._skip_whitespace()
+
+                        value_str = self._read_until(',\n}')
+                        yield StreamEvent(
+                            StreamEventType.VALUE,
+                            data=self._parse_value(value_str),
+                            path=self.path_stack.copy(),
+                            depth=self.depth
+                        )
+
+                    yield StreamEvent(
+                        StreamEventType.END_ARRAY,
+                        path=self.path_stack.copy(),
+                        depth=self.depth
+                    )
+
+                    # Done with this key
+                    self.path_stack.pop()
+
+                else:
+                    # Non-array value or nested object
                     if self._peek() == '{':
-                        # Nested object - will be handled in next iteration
+                        # Nested object - handled in subsequent iterations
                         pass
                     elif self._peek() and self._peek() not in '{\n':
-                        # Simple value
+                        # Simple scalar
                         value_str = self._read_until(',\n}')
                         yield StreamEvent(
                             StreamEventType.VALUE,
@@ -271,10 +313,11 @@ class JoltStreamParser:
                             depth=self.depth
                         )
                         self.path_stack.pop()
+
                     
-                elif self._peek() == '{':
-                    # Named object
-                    self.path_stack.append(key)
+            elif self._peek() == '{':
+                    # Named object   
+                self.path_stack.append(key)
                     # Object start will be handled in next iteration
                 
     def _parse_table(self, size: int) -> Iterator[StreamEvent]:
