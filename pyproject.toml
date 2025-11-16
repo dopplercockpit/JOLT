@@ -1,20 +1,74 @@
-[project]
-name = "jolt-tokens"
-version = "0.1.0"
-description = "JOLT (JSON-Optimized Lightweight Tokens) - a compact, LLM-native structured data format."
-authors = [
-  { name = "Joshua Dopkowski" }
-]
-readme = "README.md"
-requires-python = ">=3.9"
-license = { text = "MIT" }
+### Installation
+```bash
+pip install -e .  # Development mode
+# or
+pip install jolt-tokens  # When published to PyPI
+```
 
-[project.urls]
-Homepage = "https://github.com/dopplercockpit/JOLT"
+### Quick Start
+```python
+from jolt import json_to_jolt, jolt_to_json, JoltOptimizer
 
-[project.scripts]
-jolt = "jolt.__main__:main"
+# Basic conversion
+data = {"users": [{"id": 1, "name": "Alice"}]}
+jolt = json_to_jolt(data)  # Compact JOLT format
 
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+# With optimization
+optimizer = JoltOptimizer()
+optimized, stats = optimizer.optimize(data)
+print(f"Saved {stats.tokens_saved} tokens!")
+
+# Streaming large files
+from jolt.streaming import JoltStreamParser
+with open("huge.json") as f:
+    parser = JoltStreamParser(f)
+    for event in parser.parse_stream():
+        # Process incrementally
+        pass
+```
+
+### CLI Usage
+```bash
+# Convert JSON to JOLT
+jolt convert data.json -o data.jolt --optimize
+
+# Validate with schema
+jolt validate data.jolt -s schema.json
+
+# Benchmark performance
+jolt benchmark -i mydata.json --model gpt-4
+
+# Stream process large file
+jolt stream huge.json --mode filter --filter users.profile
+
+# Show statistics
+jolt stats data.json --verbose
+```
+
+## 🎨 What Makes JOLT Special
+
+1. **Token-First Design**: Built specifically for LLM efficiency
+2. **Human-Readable**: Unlike binary formats, you can read and edit it
+3. **Streaming Native**: Handles any size data without memory issues
+4. **Smart Compression**: Detects patterns and optimizes automatically
+5. **Framework Agnostic**: Works with your existing tech stack
+
+## 🚦 Production Readiness Checklist
+
+✅ **Core Features**
+- Encoder/Decoder
+- Streaming Support
+- Schema Validation
+- Optimization Engine
+
+✅ **Enterprise Features**
+- Error Handling
+- Large File Support
+- Framework Integration
+- CLI Tools
+
+✅ **Quality Assurance**
+- Comprehensive Tests
+- Benchmarking Suite
+- Documentation
+- Type Hints
