@@ -4,38 +4,50 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jolt-tokens"
-version = "0.2.0"
-description = "JOLT (JSON-Optimized Lightweight Tokens) — an experimental, more compact, human-readable representation for structured data."
+version = "0.3.0"
+description = "JOLT (JSON-Optimized Lightweight Tokens) - A compact, human-readable data format optimized for LLMs"
 readme = "README.md"
 requires-python = ">=3.10"
 
 authors = [
-  { name = "Joshua Dopkowski", email = "example@example.com" }
+  { name = "Joshua Dopkowski", email = "joshua@doppleredward.com" }
+]
+
+maintainers = [
+  { name = "Joshua Dopkowski", email = "joshua@doppleredward.com" }
 ]
 
 license = { text = "MIT" }
 
-keywords = ["json", "serialization", "tokens", "data-format", "jolt"]
+keywords = [
+    "json",
+    "serialization",
+    "tokens",
+    "llm",
+    "data-format",
+    "jolt",
+    "token-optimization",
+    "compression"
+]
+
 classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Text Processing :: Markup",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Developers",
-  "Intended Audience :: Education",
-  "Topic :: Software Development :: Libraries",
-  "Topic :: Utilities",
 ]
 
-# Core runtime dependencies (none yet, JOLT is stdlib-only for now)
+# Core runtime dependencies (stdlib only!)
 dependencies = []
 
 [project.optional-dependencies]
-# Everything you want for local dev
+# Development dependencies
 dev = [
   "pytest>=7.0",
   "pytest-cov>=4.1",
@@ -44,19 +56,25 @@ dev = [
   "mypy>=1.10",
 ]
 
-# Optional extras for integrations (adjust as you build them out)
-pandas = [
-  "pandas>=2.0",
+# Optional extras for advanced features
+benchmark = [
+  "tiktoken>=0.5.0",
+]
+
+# All optional dependencies
+all = [
+  "tiktoken>=0.5.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/dopplercockpit/JOLT"
-Source   = "https://github.com/dopplercockpit/JOLT"
-Issues   = "https://github.com/dopplercockpit/JOLT/issues"
+Source = "https://github.com/dopplercockpit/JOLT"
+Issues = "https://github.com/dopplercockpit/JOLT/issues"
+Documentation = "https://github.com/dopplercockpit/JOLT/blob/main/README.md"
+Changelog = "https://github.com/dopplercockpit/JOLT/blob/main/CHANGELOG.md"
 
 [project.scripts]
-# `jolt` will be the CLI entrypoint: `jolt ...`
-jolt = "jolt.cli:main"
+jolt = "jolt.__main__:main"
 
 [tool.setuptools]
 include-package-data = true
@@ -64,23 +82,68 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["jolt*"]
-exclude = ["tests*"]
+exclude = ["tests*", "examples*", "benchmarks*"]
 
 [tool.pytest.ini_options]
-addopts = "-q"
 testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers"
 
 [tool.black]
-line-length = 88
+line-length = 100
 target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py310"
-select = ["E", "F", "W", "B"]
-ignore = []
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+]
 
 [tool.mypy]
 python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
 ignore_missing_imports = true
-strict = false
+
+[tool.coverage.run]
+source = ["jolt"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
