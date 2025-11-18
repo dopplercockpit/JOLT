@@ -28,7 +28,7 @@ JOLT is a **token-efficient alternative to JSON** designed specifically for LLM 
 pip install jolt-tokens  # Coming soon to PyPI
 
 # Or install from source
-git clone https://github.com/yourusername/jolt.git
+git clone https://github.com/dopplercockpit/jolt.git
 cd jolt
 pip install -e .
 ```
@@ -353,7 +353,7 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 - GitHub Issues: [Report bugs or request features](https://github.com/dopplercockpit/jolt/issues)
 - Email: joshua@doppleredward.com
-- Discord: [Join our community](https://discord.gg/jolt)
+- Discord: [Join our community](https://discord.gg/yKQXrCyu)
 
 ---
 
