@@ -345,14 +345,14 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 
-- Original concept by Doppler/Edward
+- Original concept by doppler/edward
 - AI enhancement and v0.3 development
 - Community feedback and contributions
 
 ## 📬 Contact
 
-- GitHub Issues: [Report bugs or request features](https://github.com/yourusername/jolt/issues)
-- Email: your.email@example.com
+- GitHub Issues: [Report bugs or request features](https://github.com/dopplercockpit/jolt/issues)
+- Email: joshua@doppleredward.com
 - Discord: [Join our community](https://discord.gg/jolt)
 
 ---
